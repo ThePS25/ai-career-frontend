@@ -3,10 +3,12 @@ import {
   CheckCircleOutlined,
   CloseCircleOutlined,
   FileTextOutlined,
+  SolutionOutlined,
   TrophyOutlined,
 } from '@ant-design/icons';
 import { Col, Progress, Row, Tag, Typography } from 'antd';
-import type { CourseRecommendation, ResumeDetail } from '@/types/api';
+import { AppButton } from '@/components/common/AppButton';
+import type { CourseRecommendation, JobRecommendation, ResumeDetail } from '@/types/api';
 import styles from './ResumeDetailsPanel.module.scss';
 
 const { Title, Text } = Typography;
@@ -14,7 +16,28 @@ const { Title, Text } = Typography;
 interface ResumeDetailsPanelProps {
   resume: ResumeDetail;
   courses?: CourseRecommendation[];
+  jobs?: JobRecommendation[];
   compact?: boolean;
+}
+
+function getMatchColor(score: number): string {
+  if (score >= 80) return 'success';
+  if (score >= 60) return 'warning';
+  return 'default';
+}
+
+function getSourceLabel(source?: string): string {
+  if (source === 'adzuna') return 'Adzuna';
+  if (source === 'naukri') return 'Naukri';
+  if (source === 'indeed') return 'Indeed';
+  return 'AI Suggested';
+}
+
+function getSourceColor(source?: string): string {
+  if (source === 'adzuna') return 'cyan';
+  if (source === 'naukri') return 'purple';
+  if (source === 'indeed') return 'geekblue';
+  return 'default';
 }
 
 function getScoreStatus(score: number | null): 'success' | 'normal' | 'exception' {
@@ -27,6 +50,7 @@ function getScoreStatus(score: number | null): 'success' | 'normal' | 'exception
 export function ResumeDetailsPanel({
   resume,
   courses = resume.courseRecommendations ?? [],
+  jobs = resume.jobRecommendations ?? [],
   compact = false,
 }: ResumeDetailsPanelProps) {
   const allSkills = [
@@ -126,6 +150,57 @@ export function ResumeDetailsPanel({
               <div className={styles.tags}>
                 {allSkills.map((skill) => (
                   <Tag key={skill}>{skill}</Tag>
+                ))}
+              </div>
+            </div>
+          </Col>
+        )}
+
+        {jobs.length > 0 && (
+          <Col xs={24}>
+            <div className={styles.block}>
+              <Title level={5}>
+                <SolutionOutlined className={styles.iconPrimary} />
+                Live Job Listings
+              </Title>
+              <div className={styles.courses}>
+                {jobs.map((job) => (
+                  <div key={`${job.title}-${job.company}-${job.jobCode}`} className={styles.courseItem}>
+                    <div className={styles.courseTop}>
+                      <div className={styles.jobTitleRow}>
+                        <strong>{job.title}</strong>
+                        {job.jobCode && (
+                          <span className={styles.jobCode}>{job.jobCode}</span>
+                        )}
+                      </div>
+                      <Tag color={getMatchColor(job.matchScore)}>{job.matchScore}% match</Tag>
+                    </div>
+                    <div className={styles.jobMeta}>
+                      <Tag className={styles.companyHighlight}>{job.company}</Tag>
+                      <Tag color={getSourceColor(job.source)}>{getSourceLabel(job.source)}</Tag>
+                      <Tag color="default">{job.location}</Tag>
+                    </div>
+                    <Text type="secondary" className={styles.courseReason}>
+                      {job.reason}
+                    </Text>
+                    {job.jobUrl && (
+                      <AppButton
+                        type="link"
+                        size="small"
+                        href={job.jobUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.applyLink}
+                      >
+                        View on {getSourceLabel(job.source)} →
+                      </AppButton>
+                    )}
+                    <div className={styles.tags}>
+                      {job.requiredSkills?.map((s) => (
+                        <Tag key={s}>{s}</Tag>
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>

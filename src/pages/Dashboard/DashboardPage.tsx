@@ -5,6 +5,7 @@ import {
   InboxOutlined,
   ReadOutlined,
   ReloadOutlined,
+  SolutionOutlined,
 } from '@ant-design/icons';
 import { App, Collapse, Empty, Space, Skeleton } from 'antd';
 import { useOutletContext } from 'react-router-dom';
@@ -20,15 +21,20 @@ import styles from './DashboardPage.module.scss';
 
 type DashboardContext = { activeSection: 'upload' | 'reports' };
 
-async function fetchCoursesForResume(resume: ResumeDetail): Promise<ResumeDetail> {
-  if (resume.courseRecommendations && resume.courseRecommendations.length > 0) {
-    return resume;
+async function fetchRecommendationsForResume(resume: ResumeDetail): Promise<ResumeDetail> {
+  let updated = { ...resume };
+
+  if (!updated.courseRecommendations?.length) {
+    const { data } = await resumeApi.getCourseRecommendations(resume._id);
+    updated = { ...updated, courseRecommendations: data.data?.courses ?? [] };
   }
-  const { data } = await resumeApi.getCourseRecommendations(resume._id);
-  return {
-    ...resume,
-    courseRecommendations: data.data?.courses ?? [],
-  };
+
+  if (!updated.jobRecommendations?.length) {
+    const { data } = await resumeApi.getJobRecommendations(resume._id);
+    updated = { ...updated, jobRecommendations: data.data?.jobs ?? [] };
+  }
+
+  return updated;
 }
 
 export function DashboardPage() {
@@ -40,6 +46,7 @@ export function DashboardPage() {
   const [processing, setProcessing] = useState(false);
   const [latestResume, setLatestResume] = useState<ResumeDetail | null>(null);
   const [loadingCoursesId, setLoadingCoursesId] = useState<string | null>(null);
+  const [loadingJobsId, setLoadingJobsId] = useState<string | null>(null);
   const [reanalyzingId, setReanalyzingId] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
@@ -69,17 +76,34 @@ export function DashboardPage() {
     try {
       const { data } = await resumeApi.upload(file);
       if (data.success && data.data) {
-        const withCourses = await fetchCoursesForResume(data.data);
-        setLatestResume(withCourses);
+        const withRecommendations = await fetchRecommendationsForResume(data.data);
+        setLatestResume(withRecommendations);
         setResumes((prev) => {
-          const filtered = prev.filter((r) => r._id !== withCourses._id);
-          return [withCourses, ...filtered];
+          const filtered = prev.filter((r) => r._id !== withRecommendations._id);
+          return [withRecommendations, ...filtered];
         });
       }
     } catch (error) {
       throw new Error(getErrorMessage(error, 'Upload failed'));
     } finally {
       setProcessing(false);
+    }
+  };
+
+  const handleLoadJobs = async (resumeId: string) => {
+    setLoadingJobsId(resumeId);
+    try {
+      const { data } = await resumeApi.getJobRecommendations(resumeId);
+      const jobs = data.data?.jobs ?? [];
+      const updater = (r: ResumeDetail) =>
+        r._id === resumeId ? { ...r, jobRecommendations: jobs } : r;
+      setResumes((prev) => prev.map(updater));
+      setLatestResume((prev) => (prev?._id === resumeId ? updater(prev) : prev));
+      message.success('Job recommendations loaded');
+    } catch (error) {
+      message.error(getErrorMessage(error, 'Failed to load jobs'));
+    } finally {
+      setLoadingJobsId(null);
     }
   };
 
@@ -108,7 +132,9 @@ export function DashboardPage() {
         const existing = resumes.find((r) => r._id === resumeId);
         const updated: ResumeDetail = {
           ...data.data,
-          courseRecommendations: existing?.courseRecommendations ?? data.data.courseRecommendations,
+          courseRecommendations:
+            data.data.courseRecommendations ?? existing?.courseRecommendations,
+          jobRecommendations: data.data.jobRecommendations ?? existing?.jobRecommendations,
         };
         setResumes((prev) => prev.map((r) => (r._id === resumeId ? updated : r)));
         setLatestResume((prev) => (prev?._id === resumeId ? updated : prev));
@@ -152,6 +178,16 @@ export function DashboardPage() {
       >
         Re-analyze
       </AppButton>
+      {(!resume.jobRecommendations || resume.jobRecommendations.length === 0) && (
+        <AppButton
+          size="small"
+          icon={<SolutionOutlined />}
+          loading={loadingJobsId === resume._id}
+          onClick={() => handleLoadJobs(resume._id)}
+        >
+          Get Jobs
+        </AppButton>
+      )}
       {(!resume.courseRecommendations || resume.courseRecommendations.length === 0) && (
         <AppButton
           size="small"
@@ -185,8 +221,8 @@ export function DashboardPage() {
           }
         >
           <p className={styles.sectionDesc}>
-            Upload a PDF resume to get an ATS score, strengths, weaknesses, and course
-            recommendations.
+            Upload a PDF resume to get an ATS score, strengths, weaknesses, job matches, and
+            course recommendations.
           </p>
 
           {processing ? (

@@ -3,22 +3,34 @@ import type {
   ApiResponse,
   CourseRecommendation,
   CourseRecommendationsData,
+  JobRecommendation,
+  JobRecommendationsData,
   ResumeDetail,
 } from '@/types/api';
 
-function mapResumeFromApi(raw: Record<string, unknown>): ResumeDetail {
-  const nestedCourses = raw.courseRecommendations as
+function mapJobs(raw: Record<string, unknown>): JobRecommendation[] {
+  const nested = raw.jobRecommendations as
+    | JobRecommendation[]
+    | { jobs?: JobRecommendation[] }
+    | undefined;
+
+  if (Array.isArray(nested)) return nested;
+  if (nested?.jobs) return nested.jobs;
+  return [];
+}
+
+function mapCourses(raw: Record<string, unknown>): CourseRecommendation[] {
+  const nested = raw.courseRecommendations as
     | CourseRecommendation[]
     | { courses?: CourseRecommendation[] }
     | undefined;
 
-  let courses: CourseRecommendation[] = [];
-  if (Array.isArray(nestedCourses)) {
-    courses = nestedCourses;
-  } else if (nestedCourses?.courses) {
-    courses = nestedCourses.courses;
-  }
+  if (Array.isArray(nested)) return nested;
+  if (nested?.courses) return nested.courses;
+  return [];
+}
 
+function mapResumeFromApi(raw: Record<string, unknown>): ResumeDetail {
   const aiAnalysis = raw.aiAnalysis as { atsScore?: number } | undefined;
 
   return {
@@ -32,7 +44,8 @@ function mapResumeFromApi(raw: Record<string, unknown>): ResumeDetail {
     strengths: (raw.strengths as string[]) ?? [],
     weaknesses: (raw.weaknesses as string[]) ?? [],
     improvements: (raw.improvements as ResumeDetail['improvements']) ?? null,
-    courseRecommendations: courses,
+    courseRecommendations: mapCourses(raw),
+    jobRecommendations: mapJobs(raw),
   };
 }
 
@@ -93,6 +106,9 @@ export const resumeApi = {
     axiosClient.get<ApiResponse<CourseRecommendationsData>>(
       `/courses/${resumeId}/recommend`
     ),
+
+  getJobRecommendations: (resumeId: string) =>
+    axiosClient.get<ApiResponse<JobRecommendationsData>>(`/jobs/${resumeId}/recommend`),
 
   downloadReport: (resumeId: string) =>
     axiosClient.get(`/report/${resumeId}/download`, {

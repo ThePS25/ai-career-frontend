@@ -54,6 +54,18 @@ export interface CourseRecommendation {
   skillsCovered: string[];
 }
 
+export interface JobRecommendation {
+  title: string;
+  jobCode?: string;
+  company: string;
+  location: string;
+  matchScore: number;
+  reason: string;
+  requiredSkills: string[];
+  source?: 'adzuna' | 'naukri' | 'indeed' | 'ai' | string;
+  jobUrl?: string;
+}
+
 export interface ResumeDetail {
   _id: string;
   fileName: string;
@@ -65,8 +77,13 @@ export interface ResumeDetail {
   weaknesses: string[];
   improvements?: ResumeImprovements | null;
   courseRecommendations?: CourseRecommendation[];
+  jobRecommendations?: JobRecommendation[];
 }
 
 export interface CourseRecommendationsData {
   courses: CourseRecommendation[];
+}
+
+export interface JobRecommendationsData {
+  jobs: JobRecommendation[];
 }
