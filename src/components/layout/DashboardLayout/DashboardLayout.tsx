@@ -27,8 +27,6 @@ export function DashboardLayout() {
 
   const handleNavigate = (section: 'upload' | 'reports') => {
     navigate(`/dashboard#${section}`);
-    const el = document.getElementById(section);
-    el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   return (
@@ -44,7 +42,7 @@ export function DashboardLayout() {
           onToggleSidebar={() => setCollapsed((c) => !c)}
         />
         <Content className={styles.content}>
-          <Outlet />
+          <Outlet context={{ activeSection }} />
         </Content>
       </Layout>
     </Layout>

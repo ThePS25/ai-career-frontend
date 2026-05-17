@@ -1,27 +1,93 @@
 import axiosClient from './axiosClient';
 import type {
   ApiResponse,
+  CourseRecommendation,
   CourseRecommendationsData,
-  ResumeListItem,
+  ResumeDetail,
 } from '@/types/api';
 
+function mapResumeFromApi(raw: Record<string, unknown>): ResumeDetail {
+  const nestedCourses = raw.courseRecommendations as
+    | CourseRecommendation[]
+    | { courses?: CourseRecommendation[] }
+    | undefined;
+
+  let courses: CourseRecommendation[] = [];
+  if (Array.isArray(nestedCourses)) {
+    courses = nestedCourses;
+  } else if (nestedCourses?.courses) {
+    courses = nestedCourses.courses;
+  }
+
+  const aiAnalysis = raw.aiAnalysis as { atsScore?: number } | undefined;
+
+  return {
+    _id: String(raw._id),
+    fileName: String(raw.fileName ?? ''),
+    createdAt: String(raw.createdAt ?? new Date().toISOString()),
+    atsScore:
+      typeof raw.atsScore === 'number' ? raw.atsScore : (aiAnalysis?.atsScore ?? null),
+    sections: (raw.sections as ResumeDetail['sections']) ?? null,
+    skills: (raw.skills as ResumeDetail['skills']) ?? null,
+    strengths: (raw.strengths as string[]) ?? [],
+    weaknesses: (raw.weaknesses as string[]) ?? [],
+    improvements: (raw.improvements as ResumeDetail['improvements']) ?? null,
+    courseRecommendations: courses,
+  };
+}
+
 export const resumeApi = {
-  upload: (file: File, onProgress?: (percent: number) => void) => {
+  upload: async (file: File, onProgress?: (percent: number) => void) => {
     const formData = new FormData();
     formData.append('resume', file);
 
-    return axiosClient.post<ApiResponse>('/resume/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-      onUploadProgress: (event) => {
-        if (event.total && onProgress) {
-          onProgress(Math.round((event.loaded * 100) / event.total));
-        }
+    const response = await axiosClient.post<ApiResponse<Record<string, unknown>>>(
+      '/resume/upload',
+      formData,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (event) => {
+          if (event.total && onProgress) {
+            onProgress(Math.round((event.loaded * 100) / event.total));
+          }
+        },
+      }
+    );
+
+    return {
+      ...response,
+      data: {
+        ...response.data,
+        data: response.data.data ? mapResumeFromApi(response.data.data) : undefined,
       },
-    });
+    };
   },
 
-  getMyResumes: () =>
-    axiosClient.get<ApiResponse<ResumeListItem[]>>('/resume/my'),
+  getMyResumes: async () => {
+    const response = await axiosClient.get<ApiResponse<Record<string, unknown>[]>>(
+      '/resume/my'
+    );
+    return {
+      ...response,
+      data: {
+        ...response.data,
+        data: response.data.data?.map(mapResumeFromApi),
+      },
+    };
+  },
+
+  reanalyze: async (resumeId: string) => {
+    const response = await axiosClient.post<ApiResponse<Record<string, unknown>>>(
+      `/resume/reanalyze/${resumeId}`
+    );
+    return {
+      ...response,
+      data: {
+        ...response.data,
+        data: response.data.data ? mapResumeFromApi(response.data.data) : undefined,
+      },
+    };
+  },
 
   getCourseRecommendations: (resumeId: string) =>
     axiosClient.get<ApiResponse<CourseRecommendationsData>>(

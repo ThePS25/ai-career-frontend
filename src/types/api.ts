@@ -27,13 +27,24 @@ export interface RegisterPayload {
   password: string;
 }
 
-export interface ResumeListItem {
-  _id: string;
-  fileName: string;
-  createdAt: string;
-  aiAnalysis: {
-    atsScore: number | null;
-  };
+export interface ResumeSkills {
+  technical?: string[];
+  soft?: string[];
+  tools?: string[];
+}
+
+export interface ResumeSections {
+  hasSummary?: boolean;
+  hasProjects?: boolean;
+  hasExperience?: boolean;
+  hasEducation?: boolean;
+  hasSkills?: boolean;
+  hasCertifications?: boolean;
+}
+
+export interface ResumeImprovements {
+  improvedBullets?: string[];
+  summaryRewrite?: string;
 }
 
 export interface CourseRecommendation {
@@ -41,6 +52,19 @@ export interface CourseRecommendation {
   platform: string;
   reason: string;
   skillsCovered: string[];
+}
+
+export interface ResumeDetail {
+  _id: string;
+  fileName: string;
+  createdAt: string;
+  atsScore: number | null;
+  sections?: ResumeSections | null;
+  skills?: ResumeSkills | null;
+  strengths: string[];
+  weaknesses: string[];
+  improvements?: ResumeImprovements | null;
+  courseRecommendations?: CourseRecommendation[];
 }
 
 export interface CourseRecommendationsData {

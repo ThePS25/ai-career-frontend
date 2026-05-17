@@ -1,0 +1,110 @@
+.panel {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid $border-light;
+  animation: fadeIn 0.3s ease;
+
+  &.compact {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+}
+
+.header {
+  @include flex-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.fileName {
+  margin-bottom: 4px !important;
+}
+
+.scoreBlock {
+  flex-shrink: 0;
+}
+
+.scoreLabel {
+  display: flex;
+  flex-direction: column;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+
+  small {
+    font-size: 10px;
+    font-weight: 500;
+    color: $text-secondary;
+  }
+}
+
+.block {
+  background: $background;
+  border-radius: $radius-sm;
+  padding: 16px;
+  height: 100%;
+}
+
+.iconSuccess {
+  color: $success;
+  margin-right: 8px;
+}
+
+.iconError {
+  color: $error;
+  margin-right: 8px;
+}
+
+.iconPrimary {
+  color: $primary;
+  margin-right: 8px;
+}
+
+.list {
+  margin: 12px 0 0;
+  padding-left: 20px;
+  color: $text-secondary;
+  line-height: 1.6;
+
+  li {
+    margin-bottom: 6px;
+  }
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.courses {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.courseItem {
+  background: $card-bg;
+  border: 1px solid $border-light;
+  border-radius: $radius-sm;
+  padding: 12px;
+}
+
+.courseTop {
+  @include flex-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.courseReason {
+  display: block;
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
