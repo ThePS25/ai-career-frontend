@@ -1,0 +1,14 @@
+.button {
+  border-radius: $radius-sm;
+  font-weight: 500;
+  transition: all $transition;
+
+  &:global(.ant-btn-primary) {
+    background: $primary;
+    box-shadow: 0 2px 8px rgba($primary, 0.35);
+
+    &:hover:not(:disabled) {
+      background: $primary-dark !important;
+    }
+  }
+}

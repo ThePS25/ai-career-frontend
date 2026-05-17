@@ -1,0 +1,27 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.section {
+  scroll-margin-top: 80px;
+}
+
+.sectionDesc {
+  color: $text-secondary;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.processing {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  span {
+    font-size: 13px;
+    color: $text-secondary;
+  }
+}

@@ -1,0 +1,40 @@
+.wrapper {
+  .dragger {
+    background: $primary-light !important;
+    border-color: rgba($primary, 0.25) !important;
+    padding: 16px;
+
+    :global(.ant-upload-drag-icon .anticon) {
+      color: $primary !important;
+      font-size: 48px;
+    }
+
+    :global(.ant-upload-text) {
+      color: $text-primary;
+      font-weight: 500;
+    }
+
+    :global(.ant-upload-hint) {
+      color: $text-secondary;
+    }
+  }
+}
+
+.progress {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  span {
+    font-size: 13px;
+    color: $text-secondary;
+  }
+}
+
+.progressBar {
+  height: 6px;
+  background: linear-gradient(90deg, $primary, $secondary);
+  border-radius: 3px;
+  transition: width $transition;
+}

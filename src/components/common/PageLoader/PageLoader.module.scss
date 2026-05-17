@@ -1,0 +1,8 @@
+.loader {
+  @include flex-center;
+  padding: 48px;
+
+  &.fullPage {
+    min-height: 60vh;
+  }
+}

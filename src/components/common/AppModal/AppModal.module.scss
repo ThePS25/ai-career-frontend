@@ -1,0 +1,22 @@
+.modal {
+  :global(.ant-modal-content) {
+    border-radius: $radius-lg;
+    overflow: hidden;
+  }
+
+  :global(.ant-modal-header) {
+    border-bottom: 1px solid $border-light;
+    padding: 20px 24px;
+  }
+
+  :global(.ant-modal-title) {
+    font-weight: 600;
+    color: $text-primary;
+  }
+
+  :global(.ant-modal-body) {
+    padding: 24px;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+}

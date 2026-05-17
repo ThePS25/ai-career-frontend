@@ -1,0 +1,47 @@
+.sider {
+  background: $sidebar-bg !important;
+  border-right: 1px solid $border-light;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 10;
+
+  :global(.ant-layout-sider-children) {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.brand {
+  @include flex-center;
+  gap: 10px;
+  padding: 20px 16px;
+  font-weight: 700;
+  font-size: 15px;
+  color: $text-primary;
+  border-bottom: 1px solid $border-light;
+  min-height: 64px;
+  justify-content: flex-start;
+
+  .logo {
+    font-size: 22px;
+    color: $primary;
+    flex-shrink: 0;
+  }
+
+  span {
+    @include truncate;
+  }
+}
+
+.menu {
+  border-inline-end: none !important;
+  padding: 12px 8px;
+  flex: 1;
+
+  :global(.ant-menu-item-selected) {
+    background: $sidebar-active !important;
+    color: $primary !important;
+    font-weight: 500;
+  }
+}

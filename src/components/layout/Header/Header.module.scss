@@ -1,0 +1,46 @@
+.header {
+  @include flex-between;
+  background: $card-bg !important;
+  padding: 0 24px !important;
+  height: 64px !important;
+  line-height: 64px !important;
+  box-shadow: $header-shadow;
+  position: sticky;
+  top: 0;
+  z-index: 9;
+}
+
+.left {
+  @include flex-center;
+  gap: 8px;
+}
+
+.menuBtn {
+  font-size: 18px;
+  color: $text-secondary;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  color: $text-primary;
+  margin: 0;
+
+  @include respond-to(mobile) {
+    font-size: 16px;
+  }
+}
+
+.right {
+  @include flex-center;
+  gap: 16px;
+}
+
+.email {
+  color: $text-secondary;
+  font-size: 14px;
+
+  @include respond-to(mobile) {
+    display: none;
+  }
+}

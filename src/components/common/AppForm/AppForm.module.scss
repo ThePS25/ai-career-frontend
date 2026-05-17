@@ -1,0 +1,12 @@
+.form {
+  :global(.ant-form-item-label > label) {
+    font-weight: 500;
+    color: $text-primary;
+  }
+
+  :global(.ant-input),
+  :global(.ant-input-password) {
+    border-radius: $radius-sm;
+    padding: 10px 12px;
+  }
+}
