@@ -2,6 +2,7 @@ import {
   BookOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
+  FileTextOutlined,
   TrophyOutlined,
 } from '@ant-design/icons';
 import { Col, Progress, Row, Tag, Typography } from 'antd';
@@ -65,6 +66,20 @@ export function ResumeDetailsPanel({
       </div>
 
       <Row gutter={[16, 16]} className={styles.grid}>
+        <Col xs={24}>
+          <div className={styles.block}>
+            <Title level={5}>
+              <FileTextOutlined className={styles.iconPrimary} />
+              Summary
+            </Title>
+            {resume.improvements?.summaryRewrite ? (
+              <p className={styles.summary}>{resume.improvements.summaryRewrite}</p>
+            ) : (
+              <Text type="secondary">No summary available</Text>
+            )}
+          </div>
+        </Col>
+
         <Col xs={24} md={12}>
           <div className={styles.block}>
             <Title level={5}>
