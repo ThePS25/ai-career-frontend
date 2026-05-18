@@ -27,13 +27,24 @@ export interface RegisterPayload {
   password: string;
 }
 
-export interface ResumeListItem {
-  _id: string;
-  fileName: string;
-  createdAt: string;
-  aiAnalysis: {
-    atsScore: number | null;
-  };
+export interface ResumeSkills {
+  technical?: string[];
+  soft?: string[];
+  tools?: string[];
+}
+
+export interface ResumeSections {
+  hasSummary?: boolean;
+  hasProjects?: boolean;
+  hasExperience?: boolean;
+  hasEducation?: boolean;
+  hasSkills?: boolean;
+  hasCertifications?: boolean;
+}
+
+export interface ResumeImprovements {
+  improvedBullets?: string[];
+  summaryRewrite?: string;
 }
 
 export interface CourseRecommendation {
@@ -43,6 +54,36 @@ export interface CourseRecommendation {
   skillsCovered: string[];
 }
 
+export interface JobRecommendation {
+  title: string;
+  jobCode?: string;
+  company: string;
+  location: string;
+  matchScore: number;
+  reason: string;
+  requiredSkills: string[];
+  source?: 'adzuna' | 'naukri' | 'indeed' | 'ai' | string;
+  jobUrl?: string;
+}
+
+export interface ResumeDetail {
+  _id: string;
+  fileName: string;
+  createdAt: string;
+  atsScore: number | null;
+  sections?: ResumeSections | null;
+  skills?: ResumeSkills | null;
+  strengths: string[];
+  weaknesses: string[];
+  improvements?: ResumeImprovements | null;
+  courseRecommendations?: CourseRecommendation[];
+  jobRecommendations?: JobRecommendation[];
+}
+
 export interface CourseRecommendationsData {
   courses: CourseRecommendation[];
+}
+
+export interface JobRecommendationsData {
+  jobs: JobRecommendation[];
 }

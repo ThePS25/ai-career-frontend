@@ -1,0 +1,35 @@
+.skeleton {
+  @include flex-center;
+  flex-direction: column;
+  gap: 16px;
+  padding: 48px 24px;
+  background: $primary-light;
+  border: 2px dashed rgba($primary, 0.25);
+  border-radius: $radius-md;
+  min-height: 200px;
+
+  .icon {
+    width: 64px !important;
+    height: 64px !important;
+
+    :global(.ant-skeleton-image) {
+      width: 64px;
+      height: 64px;
+    }
+  }
+
+  .line {
+    max-width: 280px;
+  }
+
+  .lineShort {
+    max-width: 200px;
+  }
+
+  .hint {
+    margin-top: 8px;
+    font-size: 13px;
+    color: $text-secondary;
+    text-align: center;
+  }
+}

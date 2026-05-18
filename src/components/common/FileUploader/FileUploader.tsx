@@ -6,14 +6,13 @@ import styles from './FileUploader.module.scss';
 const { Dragger } = Upload;
 
 interface FileUploaderProps {
-  onUpload: (file: File, onProgress: (percent: number) => void) => Promise<void>;
+  onUpload: (file: File) => Promise<void>;
   disabled?: boolean;
 }
 
 export function FileUploader({ onUpload, disabled }: FileUploaderProps) {
   const { message } = App.useApp();
   const [uploading, setUploading] = useState(false);
-  const [progress, setProgress] = useState(0);
 
   const customRequest: UploadProps['customRequest'] = async (options) => {
     const file = options.file as File;
@@ -25,10 +24,9 @@ export function FileUploader({ onUpload, disabled }: FileUploaderProps) {
     }
 
     setUploading(true);
-    setProgress(0);
 
     try {
-      await onUpload(file, setProgress);
+      await onUpload(file);
       message.success('Resume uploaded and analyzed successfully');
       options.onSuccess?.({});
     } catch (err) {
@@ -38,7 +36,6 @@ export function FileUploader({ onUpload, disabled }: FileUploaderProps) {
       options.onError?.(err as Error);
     } finally {
       setUploading(false);
-      setProgress(0);
     }
   };
 
@@ -67,12 +64,6 @@ export function FileUploader({ onUpload, disabled }: FileUploaderProps) {
         <p className="ant-upload-text">Click or drag PDF resume to upload</p>
         <p className="ant-upload-hint">Only PDF files · Max one file at a time</p>
       </Dragger>
-      {uploading && (
-        <div className={styles.progress}>
-          <div className={styles.progressBar} style={{ width: `${progress}%` }} />
-          <span>{progress}% — AI is analyzing your resume…</span>
-        </div>
-      )}
     </div>
   );
 }
