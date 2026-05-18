@@ -20,6 +20,7 @@ interface AuthContextValue {
   isLoading: boolean;
   login: (payload: LoginPayload) => Promise<void>;
   register: (payload: RegisterPayload) => Promise<void>;
+  loginWithGoogle: (credential: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -76,6 +77,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [navigate, persistSession]
   );
 
+  const loginWithGoogle = useCallback(
+    async (credential: string) => {
+      const { data } = await authApi.googleLogin({ credential });
+      if (!data.success || !data.token) {
+        throw new Error(data.message || 'Google sign-in failed');
+      }
+      persistSession(data.token, data.user);
+      navigate('/dashboard');
+    },
+    [navigate, persistSession]
+  );
+
   useEffect(() => {
     const token = localStorage.getItem('aicareer_token');
     if (!token) {
@@ -104,9 +117,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading,
       login,
       register,
+      loginWithGoogle,
       logout,
     }),
-    [user, isLoading, login, register, logout]
+    [user, isLoading, login, register, loginWithGoogle, logout]
   );
 
   return (

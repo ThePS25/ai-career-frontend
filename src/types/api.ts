@@ -8,6 +8,12 @@ export interface ApiResponse<T = unknown> {
 export interface User {
   id: string;
   email: string;
+  name?: string;
+  avatar?: string;
+}
+
+export interface GoogleLoginPayload {
+  credential: string;
 }
 
 export interface AuthResponse {

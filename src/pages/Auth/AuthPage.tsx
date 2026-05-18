@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { RocketOutlined } from '@ant-design/icons';
-import { App, Input, Tabs, type TabsProps } from 'antd';
+import { App, Divider, Input, Tabs, type TabsProps } from 'antd';
+import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
 import { AppButton } from '@/components/common/AppButton';
 import { AppCard } from '@/components/common/AppCard';
 import { AppForm } from '@/components/common/AppForm';
@@ -11,7 +12,8 @@ import styles from './AuthPage.module.scss';
 
 export function AuthPage() {
   const { message } = App.useApp();
-  const { login, register } = useAuth();
+  const { login, register, loginWithGoogle } = useAuth();
+  const googleEnabled = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID);
   const [loading, setLoading] = useState(false);
   const [loginForm] = AppForm.useForm<LoginPayload>();
   const [registerForm] = AppForm.useForm<RegisterPayload>();
@@ -23,6 +25,18 @@ export function AuthPage() {
       message.success('Welcome back!');
     } catch (error) {
       message.error(getErrorMessage(error, 'Login failed'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credential: string) => {
+    setLoading(true);
+    try {
+      await loginWithGoogle(credential);
+      message.success('Signed in with Google!');
+    } catch (error) {
+      message.error(getErrorMessage(error, 'Google sign-in failed'));
     } finally {
       setLoading(false);
     }
@@ -111,6 +125,17 @@ export function AuthPage() {
           <p>Upload your resume, get ATS insights, and personalized course recommendations.</p>
         </div>
         <Tabs defaultActiveKey="login" items={tabItems} className={styles.tabs} />
+        {googleEnabled && (
+          <>
+            <Divider plain className={styles.divider}>
+              or
+            </Divider>
+            <GoogleSignInButton
+              onSuccess={handleGoogleSuccess}
+              onError={() => message.error('Google sign-in was cancelled or failed')}
+            />
+          </>
+        )}
       </AppCard>
     </div>
   );

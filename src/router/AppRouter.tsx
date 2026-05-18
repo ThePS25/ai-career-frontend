@@ -1,3 +1,4 @@
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { PageLoader } from '@/components/common/PageLoader';
@@ -60,12 +61,20 @@ function RouterContent() {
   );
 }
 
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+
 export function AppRouter() {
-  return (
+  const router = (
     <BrowserRouter>
       <AuthProvider>
         <RouterContent />
       </AuthProvider>
     </BrowserRouter>
   );
+
+  if (!googleClientId) {
+    return router;
+  }
+
+  return <GoogleOAuthProvider clientId={googleClientId}>{router}</GoogleOAuthProvider>;
 }

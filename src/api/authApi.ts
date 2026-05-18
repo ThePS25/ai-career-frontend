@@ -1,6 +1,7 @@
 import axiosClient from './axiosClient';
 import type {
   AuthResponse,
+  GoogleLoginPayload,
   LoginPayload,
   RegisterPayload,
   User,
@@ -12,6 +13,9 @@ export const authApi = {
 
   register: (payload: RegisterPayload) =>
     axiosClient.post<AuthResponse>('/auth/register', payload),
+
+  googleLogin: (payload: GoogleLoginPayload) =>
+    axiosClient.post<AuthResponse>('/auth/google', payload),
 
   getMe: () =>
     axiosClient.get<{ success: boolean; user: User }>('/auth/me'),

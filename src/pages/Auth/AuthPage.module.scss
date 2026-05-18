@@ -34,6 +34,12 @@
   }
 }
 
+.divider {
+  margin: 8px 0 20px !important;
+  color: $text-secondary !important;
+  font-size: 13px !important;
+}
+
 .tabs {
   :global(.ant-tabs-nav) {
     margin-bottom: 24px;
