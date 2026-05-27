@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { RocketOutlined } from '@ant-design/icons';
 import { App, Divider, Input, Tabs, type TabsProps } from 'antd';
 import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
@@ -13,8 +14,18 @@ import styles from './AuthPage.module.scss';
 export function AuthPage() {
   const { message } = App.useApp();
   const { login, register, loginWithGoogle } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const googleEnabled = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get('session') === 'expired') {
+      message.warning('Your session has expired. Please sign in again.');
+      searchParams.delete('session');
+      searchParams.delete('returnTo');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [message, searchParams, setSearchParams]);
   const [loginForm] = AppForm.useForm<LoginPayload>();
   const [registerForm] = AppForm.useForm<RegisterPayload>();
 

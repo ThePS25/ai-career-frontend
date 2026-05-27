@@ -150,9 +150,14 @@
 
 .jobMeta {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 6px;
   margin-bottom: 8px;
+  @include scroll-container;
+
+  @include respond-to(mobile) {
+    padding-bottom: 4px;
+  }
 }
 
 .applyLink {

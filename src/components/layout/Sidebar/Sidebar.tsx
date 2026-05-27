@@ -12,6 +12,7 @@ interface SidebarProps {
   collapsed: boolean;
   activeSection: 'upload' | 'reports';
   onNavigate: (section: 'upload' | 'reports') => void;
+  isMobile?: boolean;
 }
 
 const menuItems: MenuProps['items'] = [
@@ -27,15 +28,22 @@ const menuItems: MenuProps['items'] = [
   },
 ];
 
-export function Sidebar({ collapsed, activeSection, onNavigate }: SidebarProps) {
+export function Sidebar({
+  collapsed,
+  activeSection,
+  onNavigate,
+  isMobile = false,
+}: SidebarProps) {
   return (
     <Sider
       collapsible
       collapsed={collapsed}
       trigger={null}
       width={240}
-      collapsedWidth={72}
-      className={styles.sider}
+      collapsedWidth={isMobile ? 0 : 72}
+      className={[styles.sider, isMobile && !collapsed && styles.siderMobileOpen]
+        .filter(Boolean)
+        .join(' ')}
       breakpoint="lg"
     >
       <div className={styles.brand}>

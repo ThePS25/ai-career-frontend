@@ -70,11 +70,11 @@ export function DashboardPage() {
     }
   }, [activeSection, fetchResumes]);
 
-  const handleUpload = async (file: File) => {
+  const handleUpload = async (file: File, onProgress?: (percent: number) => void) => {
     setProcessing(true);
     setLatestResume(null);
     try {
-      const { data } = await resumeApi.upload(file);
+      const { data } = await resumeApi.upload(file, onProgress);
       if (data.success && data.data) {
         const withRecommendations = await fetchRecommendationsForResume(data.data);
         setLatestResume(withRecommendations);
@@ -84,7 +84,7 @@ export function DashboardPage() {
         });
       }
     } catch (error) {
-      throw new Error(getErrorMessage(error, 'Upload failed'));
+      throw new Error(getErrorMessage(error, 'Upload failed'), { cause: error });
     } finally {
       setProcessing(false);
     }
