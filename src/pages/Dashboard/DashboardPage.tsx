@@ -3,11 +3,12 @@ import {
   DownloadOutlined,
   FileTextOutlined,
   InboxOutlined,
+  RobotOutlined,
   ReadOutlined,
   ReloadOutlined,
   SolutionOutlined,
 } from '@ant-design/icons';
-import { App, Collapse, Empty, Space, Skeleton } from 'antd';
+import { App, Collapse, Empty, Segmented, Space, Skeleton, Tag } from 'antd';
 import { RateLimitAlert } from '@/components/common/RateLimitAlert';
 import { useOutletContext } from 'react-router-dom';
 import { AppButton } from '@/components/common/AppButton';
@@ -15,27 +16,31 @@ import { AppCard } from '@/components/common/AppCard';
 import { FileUploader } from '@/components/common/FileUploader';
 import { UploadSkeleton } from '@/components/common/UploadSkeleton';
 import { resumeApi } from '@/api/resumeApi';
+import { systemApi } from '@/api/systemApi';
 import {
   getErrorMessage,
   isTooManyRequestsError,
   notifyApiError,
 } from '@/utils/errors';
-import type { ResumeDetail } from '@/types/api';
+import type { AiProvider, ResumeDetail } from '@/types/api';
 import { ResumeDetailsPanel } from './ResumeDetailsPanel';
 import styles from './DashboardPage.module.scss';
 
 type DashboardContext = { activeSection: 'upload' | 'reports' };
 
-async function fetchRecommendationsForResume(resume: ResumeDetail): Promise<ResumeDetail> {
+async function fetchRecommendationsForResume(
+  resume: ResumeDetail,
+  provider?: AiProvider
+): Promise<ResumeDetail> {
   let updated = { ...resume };
 
   if (!updated.courseRecommendations?.length) {
-    const { data } = await resumeApi.getCourseRecommendations(resume._id);
+    const { data } = await resumeApi.getCourseRecommendations(resume._id, provider);
     updated = { ...updated, courseRecommendations: data.data?.courses ?? [] };
   }
 
   if (!updated.jobRecommendations?.length) {
-    const { data } = await resumeApi.getJobRecommendations(resume._id);
+    const { data } = await resumeApi.getJobRecommendations(resume._id, provider);
     updated = { ...updated, jobRecommendations: data.data?.jobs ?? [] };
   }
 
@@ -55,6 +60,8 @@ export function DashboardPage() {
   const [reanalyzingId, setReanalyzingId] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [rateLimitMessage, setRateLimitMessage] = useState<string | null>(null);
+  const [availableProviders, setAvailableProviders] = useState<AiProvider[]>([]);
+  const [selectedProvider, setSelectedProvider] = useState<AiProvider | null>(null);
 
   const fetchResumes = useCallback(async () => {
     setLoadingList(true);
@@ -79,14 +86,30 @@ export function DashboardPage() {
     }
   }, [activeSection, fetchResumes]);
 
+  useEffect(() => {
+    systemApi
+      .getAiStatus()
+      .then(({ data }) => {
+        const providers = data.data?.availableProviders ?? [];
+        setAvailableProviders(providers);
+        setSelectedProvider(data.data?.activeProvider ?? providers[0] ?? null);
+      })
+      .catch((error) => {
+        notifyApiError(message, error, 'Failed to load AI provider settings');
+      });
+  }, [message]);
+
   const handleUpload = async (file: File, onProgress?: (percent: number) => void) => {
     setProcessing(true);
     setLatestResume(null);
     setRateLimitMessage(null);
     try {
-      const { data } = await resumeApi.upload(file, onProgress);
+      const { data } = await resumeApi.upload(file, onProgress, selectedProvider ?? undefined);
       if (data.success && data.data) {
-        const withRecommendations = await fetchRecommendationsForResume(data.data);
+        const withRecommendations = await fetchRecommendationsForResume(
+          data.data,
+          selectedProvider ?? undefined
+        );
         setLatestResume(withRecommendations);
         setResumes((prev) => {
           const filtered = prev.filter((r) => r._id !== withRecommendations._id);
@@ -107,7 +130,10 @@ export function DashboardPage() {
   const handleLoadJobs = async (resumeId: string) => {
     setLoadingJobsId(resumeId);
     try {
-      const { data } = await resumeApi.getJobRecommendations(resumeId);
+      const { data } = await resumeApi.getJobRecommendations(
+        resumeId,
+        selectedProvider ?? undefined
+      );
       const jobs = data.data?.jobs ?? [];
       const updater = (r: ResumeDetail) =>
         r._id === resumeId ? { ...r, jobRecommendations: jobs } : r;
@@ -124,7 +150,10 @@ export function DashboardPage() {
   const handleLoadCourses = async (resumeId: string) => {
     setLoadingCoursesId(resumeId);
     try {
-      const { data } = await resumeApi.getCourseRecommendations(resumeId);
+      const { data } = await resumeApi.getCourseRecommendations(
+        resumeId,
+        selectedProvider ?? undefined
+      );
       const courses = data.data?.courses ?? [];
       const updater = (r: ResumeDetail) =>
         r._id === resumeId ? { ...r, courseRecommendations: courses } : r;
@@ -141,7 +170,7 @@ export function DashboardPage() {
   const handleReanalyze = async (resumeId: string) => {
     setReanalyzingId(resumeId);
     try {
-      const { data } = await resumeApi.reanalyze(resumeId);
+      const { data } = await resumeApi.reanalyze(resumeId, selectedProvider ?? undefined);
       if (data.success && data.data) {
         const existing = resumes.find((r) => r._id === resumeId);
         const updated: ResumeDetail = {
@@ -247,6 +276,26 @@ export function DashboardPage() {
               message={rateLimitMessage}
               onClose={() => setRateLimitMessage(null)}
             />
+          )}
+
+          {selectedProvider && (
+            <div className={styles.actions}>
+              <Space align="center" wrap>
+                <Tag icon={<RobotOutlined />} color="blue">
+                  Active AI: {selectedProvider}
+                </Tag>
+                {availableProviders.length > 1 && (
+                  <Segmented
+                    value={selectedProvider}
+                    options={availableProviders.map((provider) => ({
+                      label: provider === 'huggingface' ? 'Hugging Face' : 'Gemini',
+                      value: provider,
+                    }))}
+                    onChange={(value) => setSelectedProvider(value as AiProvider)}
+                  />
+                )}
+              </Space>
+            </div>
           )}
 
           {processing ? (

@@ -93,3 +93,11 @@ export interface CourseRecommendationsData {
 export interface JobRecommendationsData {
   jobs: JobRecommendation[];
 }
+
+export type AiProvider = 'huggingface' | 'gemini';
+
+export interface AiStatusData {
+  availableProviders: AiProvider[];
+  activeProvider: AiProvider | null;
+  canSwitch: boolean;
+}

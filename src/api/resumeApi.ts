@@ -1,5 +1,6 @@
 import axiosClient from './axiosClient';
 import type {
+  AiProvider,
   ApiResponse,
   CourseRecommendation,
   CourseRecommendationsData,
@@ -50,7 +51,11 @@ function mapResumeFromApi(raw: Record<string, unknown>): ResumeDetail {
 }
 
 export const resumeApi = {
-  upload: async (file: File, onProgress?: (percent: number) => void) => {
+  upload: async (
+    file: File,
+    onProgress?: (percent: number) => void,
+    provider?: AiProvider
+  ) => {
     const formData = new FormData();
     formData.append('resume', file);
 
@@ -59,7 +64,10 @@ export const resumeApi = {
       formData,
       {
         skipRateLimitToast: true,
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          ...(provider ? { 'X-AI-Provider': provider } : {}),
+        },
         onUploadProgress: (event) => {
           if (event.total && onProgress) {
             onProgress(Math.round((event.loaded * 100) / event.total));
@@ -90,9 +98,13 @@ export const resumeApi = {
     };
   },
 
-  reanalyze: async (resumeId: string) => {
+  reanalyze: async (resumeId: string, provider?: AiProvider) => {
     const response = await axiosClient.post<ApiResponse<Record<string, unknown>>>(
-      `/resume/reanalyze/${resumeId}`
+      `/resume/reanalyze/${resumeId}`,
+      undefined,
+      {
+        headers: provider ? { 'X-AI-Provider': provider } : undefined,
+      }
     );
     return {
       ...response,
@@ -103,13 +115,18 @@ export const resumeApi = {
     };
   },
 
-  getCourseRecommendations: (resumeId: string) =>
+  getCourseRecommendations: (resumeId: string, provider?: AiProvider) =>
     axiosClient.get<ApiResponse<CourseRecommendationsData>>(
-      `/courses/${resumeId}/recommend`
+      `/courses/${resumeId}/recommend`,
+      {
+        headers: provider ? { 'X-AI-Provider': provider } : undefined,
+      }
     ),
 
-  getJobRecommendations: (resumeId: string) =>
-    axiosClient.get<ApiResponse<JobRecommendationsData>>(`/jobs/${resumeId}/recommend`),
+  getJobRecommendations: (resumeId: string, provider?: AiProvider) =>
+    axiosClient.get<ApiResponse<JobRecommendationsData>>(`/jobs/${resumeId}/recommend`, {
+      headers: provider ? { 'X-AI-Provider': provider } : undefined,
+    }),
 
   downloadReport: (resumeId: string) =>
     axiosClient.get(`/report/${resumeId}/download`, {
