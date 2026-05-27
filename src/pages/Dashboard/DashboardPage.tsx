@@ -8,18 +8,13 @@ import {
   SolutionOutlined,
 } from '@ant-design/icons';
 import { App, Collapse, Empty, Space, Skeleton } from 'antd';
-import { RateLimitAlert } from '@/components/common/RateLimitAlert';
 import { useOutletContext } from 'react-router-dom';
 import { AppButton } from '@/components/common/AppButton';
 import { AppCard } from '@/components/common/AppCard';
 import { FileUploader } from '@/components/common/FileUploader';
 import { UploadSkeleton } from '@/components/common/UploadSkeleton';
 import { resumeApi } from '@/api/resumeApi';
-import {
-  getErrorMessage,
-  isTooManyRequestsError,
-  notifyApiError,
-} from '@/utils/errors';
+import { getErrorMessage } from '@/utils/errors';
 import type { ResumeDetail } from '@/types/api';
 import { ResumeDetailsPanel } from './ResumeDetailsPanel';
 import styles from './DashboardPage.module.scss';
@@ -54,7 +49,6 @@ export function DashboardPage() {
   const [loadingJobsId, setLoadingJobsId] = useState<string | null>(null);
   const [reanalyzingId, setReanalyzingId] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
-  const [rateLimitMessage, setRateLimitMessage] = useState<string | null>(null);
 
   const fetchResumes = useCallback(async () => {
     setLoadingList(true);
@@ -64,10 +58,7 @@ export function DashboardPage() {
         setResumes(data.data);
       }
     } catch (error) {
-      notifyApiError(message, error, 'Failed to load resumes');
-      if (isTooManyRequestsError(error)) {
-        setRateLimitMessage(getErrorMessage(error, 'Failed to load resumes'));
-      }
+      message.error(getErrorMessage(error, 'Failed to load resumes'));
     } finally {
       setLoadingList(false);
     }
@@ -79,12 +70,11 @@ export function DashboardPage() {
     }
   }, [activeSection, fetchResumes]);
 
-  const handleUpload = async (file: File, onProgress?: (percent: number) => void) => {
+  const handleUpload = async (file: File) => {
     setProcessing(true);
     setLatestResume(null);
-    setRateLimitMessage(null);
     try {
-      const { data } = await resumeApi.upload(file, onProgress);
+      const { data } = await resumeApi.upload(file);
       if (data.success && data.data) {
         const withRecommendations = await fetchRecommendationsForResume(data.data);
         setLatestResume(withRecommendations);
@@ -94,11 +84,7 @@ export function DashboardPage() {
         });
       }
     } catch (error) {
-      const errorText = getErrorMessage(error, 'Upload failed');
-      if (isTooManyRequestsError(error)) {
-        setRateLimitMessage(errorText);
-      }
-      throw new Error(errorText, { cause: error });
+      throw new Error(getErrorMessage(error, 'Upload failed'));
     } finally {
       setProcessing(false);
     }
@@ -115,7 +101,7 @@ export function DashboardPage() {
       setLatestResume((prev) => (prev?._id === resumeId ? updater(prev) : prev));
       message.success('Job recommendations loaded');
     } catch (error) {
-      notifyApiError(message, error, 'Failed to load jobs');
+      message.error(getErrorMessage(error, 'Failed to load jobs'));
     } finally {
       setLoadingJobsId(null);
     }
@@ -132,7 +118,7 @@ export function DashboardPage() {
       setLatestResume((prev) => (prev?._id === resumeId ? updater(prev) : prev));
       message.success('Course recommendations loaded');
     } catch (error) {
-      notifyApiError(message, error, 'Failed to load courses');
+      message.error(getErrorMessage(error, 'Failed to load courses'));
     } finally {
       setLoadingCoursesId(null);
     }
@@ -155,10 +141,7 @@ export function DashboardPage() {
         message.success('Resume re-analyzed successfully');
       }
     } catch (error) {
-      notifyApiError(message, error, 'Reanalysis failed');
-      if (isTooManyRequestsError(error)) {
-        setRateLimitMessage(getErrorMessage(error, 'Reanalysis failed'));
-      }
+      message.error(getErrorMessage(error, 'Reanalysis failed'));
     } finally {
       setReanalyzingId(null);
     }
@@ -179,7 +162,7 @@ export function DashboardPage() {
       window.URL.revokeObjectURL(url);
       message.success('Report downloaded');
     } catch (error) {
-      notifyApiError(message, error, 'Failed to download report');
+      message.error(getErrorMessage(error, 'Failed to download report'));
     } finally {
       setDownloadingId(null);
     }
@@ -241,13 +224,6 @@ export function DashboardPage() {
             Upload a PDF resume to get an ATS score, strengths, weaknesses, job matches, and
             course recommendations.
           </p>
-
-          {rateLimitMessage && (
-            <RateLimitAlert
-              message={rateLimitMessage}
-              onClose={() => setRateLimitMessage(null)}
-            />
-          )}
 
           {processing ? (
             <UploadSkeleton />
