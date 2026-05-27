@@ -9,7 +9,7 @@ import {
 } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '@/api/authApi';
-import { clearStoredToken, setStoredToken } from '@/api/axiosClient';
+import { clearSession, getStoredToken, setStoredToken } from '@/api/axiosClient';
 import type { LoginPayload, RegisterPayload, User } from '@/types/api';
 
 const USER_KEY = 'aicareer_user';
@@ -47,8 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(() => {
-    clearStoredToken();
-    localStorage.removeItem(USER_KEY);
+    clearSession();
     setUser(null);
     navigate('/auth');
   }, [navigate]);
@@ -90,7 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   useEffect(() => {
-    const token = localStorage.getItem('aicareer_token');
+    const token = getStoredToken();
     if (!token) {
       setIsLoading(false);
       return;
@@ -123,9 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [user, isLoading, login, register, loginWithGoogle, logout]
   );
 
-  return (
-    <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth(): AuthContextValue {

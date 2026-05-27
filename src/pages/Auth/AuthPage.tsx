@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { RocketOutlined } from '@ant-design/icons';
 import { App, Divider, Input, Tabs, type TabsProps } from 'antd';
 import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
@@ -6,15 +7,25 @@ import { AppButton } from '@/components/common/AppButton';
 import { AppCard } from '@/components/common/AppCard';
 import { AppForm } from '@/components/common/AppForm';
 import { useAuth } from '@/hooks/useAuth';
-import { getErrorMessage } from '@/utils/errors';
+import { notifyApiError } from '@/utils/errors';
 import type { LoginPayload, RegisterPayload } from '@/types/api';
 import styles from './AuthPage.module.scss';
 
 export function AuthPage() {
   const { message } = App.useApp();
   const { login, register, loginWithGoogle } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const googleEnabled = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get('session') === 'expired') {
+      message.warning('Your session has expired. Please sign in again.');
+      searchParams.delete('session');
+      searchParams.delete('returnTo');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [message, searchParams, setSearchParams]);
   const [loginForm] = AppForm.useForm<LoginPayload>();
   const [registerForm] = AppForm.useForm<RegisterPayload>();
 
@@ -24,7 +35,7 @@ export function AuthPage() {
       await login(values);
       message.success('Welcome back!');
     } catch (error) {
-      message.error(getErrorMessage(error, 'Login failed'));
+      notifyApiError(message, error, 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -36,7 +47,7 @@ export function AuthPage() {
       await loginWithGoogle(credential);
       message.success('Signed in with Google!');
     } catch (error) {
-      message.error(getErrorMessage(error, 'Google sign-in failed'));
+      notifyApiError(message, error, 'Google sign-in failed');
     } finally {
       setLoading(false);
     }
@@ -48,7 +59,7 @@ export function AuthPage() {
       await register(values);
       message.success('Account created successfully!');
     } catch (error) {
-      message.error(getErrorMessage(error, 'Registration failed'));
+      notifyApiError(message, error, 'Registration failed');
     } finally {
       setLoading(false);
     }

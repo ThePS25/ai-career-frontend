@@ -11,8 +11,18 @@
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
+  @include scroll-container;
 
   @include respond-to(mobile) {
     padding: 16px;
   }
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+  border: none;
+  background: rgba(0, 0, 0, 0.45);
+  cursor: pointer;
 }
