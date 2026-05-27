@@ -58,6 +58,7 @@ export const resumeApi = {
       '/resume/upload',
       formData,
       {
+        skipRateLimitToast: true,
         headers: { 'Content-Type': 'multipart/form-data' },
         onUploadProgress: (event) => {
           if (event.total && onProgress) {

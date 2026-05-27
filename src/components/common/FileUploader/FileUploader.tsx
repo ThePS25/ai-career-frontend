@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { InboxOutlined } from '@ant-design/icons';
 import { App, Progress, Upload, type UploadProps } from 'antd';
+import { getErrorMessage, notifyApiError } from '@/utils/errors';
 import styles from './FileUploader.module.scss';
 
 const { Dragger } = Upload;
@@ -50,10 +51,9 @@ export function FileUploader({ onUpload, disabled }: FileUploaderProps) {
       message.success('Resume uploaded and analyzed successfully');
       options.onSuccess?.({});
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Upload failed. Please try again.';
-      message.error(errorMessage);
-      options.onError?.(err as Error);
+      notifyApiError(message, err, 'Upload failed. Please try again.');
+      const errorMessage = getErrorMessage(err, 'Upload failed. Please try again.');
+      options.onError?.(new Error(errorMessage));
     } finally {
       setUploading(false);
       setProgress(0);

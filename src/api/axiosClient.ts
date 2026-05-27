@@ -1,4 +1,6 @@
 import axios from 'axios';
+import { message } from 'antd';
+import { getErrorMessage, isTooManyRequestsError } from '@/utils/errors';
 
 const TOKEN_KEY = 'aicareer_token';
 const USER_KEY = 'aicareer_user';
@@ -61,6 +63,14 @@ axiosClient.interceptors.response.use(
         );
         window.location.href = `/auth?session=expired&returnTo=${returnTo}`;
       }
+    }
+
+    if (isTooManyRequestsError(error) && error.config?.skipRateLimitToast !== true) {
+      message.warning({
+        content: getErrorMessage(error, 'Too many requests. Please try again later.'),
+        duration: 8,
+        key: 'too-many-requests',
+      });
     }
 
     return Promise.reject(error);

@@ -7,7 +7,7 @@ import { AppButton } from '@/components/common/AppButton';
 import { AppCard } from '@/components/common/AppCard';
 import { AppForm } from '@/components/common/AppForm';
 import { useAuth } from '@/hooks/useAuth';
-import { getErrorMessage } from '@/utils/errors';
+import { notifyApiError } from '@/utils/errors';
 import type { LoginPayload, RegisterPayload } from '@/types/api';
 import styles from './AuthPage.module.scss';
 
@@ -35,7 +35,7 @@ export function AuthPage() {
       await login(values);
       message.success('Welcome back!');
     } catch (error) {
-      message.error(getErrorMessage(error, 'Login failed'));
+      notifyApiError(message, error, 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -47,7 +47,7 @@ export function AuthPage() {
       await loginWithGoogle(credential);
       message.success('Signed in with Google!');
     } catch (error) {
-      message.error(getErrorMessage(error, 'Google sign-in failed'));
+      notifyApiError(message, error, 'Google sign-in failed');
     } finally {
       setLoading(false);
     }
@@ -59,7 +59,7 @@ export function AuthPage() {
       await register(values);
       message.success('Account created successfully!');
     } catch (error) {
-      message.error(getErrorMessage(error, 'Registration failed'));
+      notifyApiError(message, error, 'Registration failed');
     } finally {
       setLoading(false);
     }
